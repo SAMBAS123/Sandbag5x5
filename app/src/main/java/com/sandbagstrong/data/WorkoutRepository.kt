@@ -4,11 +4,19 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.sandbagstrong.data.db.AppDatabase
 import com.sandbagstrong.data.db.ExerciseTargetEntity
+import com.sandbagstrong.data.db.MicroRoundSessionEntity
 import com.sandbagstrong.data.db.SetLogEntity
 import com.sandbagstrong.data.db.WorkoutSessionEntity
 import com.sandbagstrong.domain.Exercise
 import com.sandbagstrong.domain.FeelRating
+import com.sandbagstrong.domain.IntentResult
+import com.sandbagstrong.domain.KneeStatusAfter
+import com.sandbagstrong.domain.KneeStatusBefore
+import com.sandbagstrong.domain.MicroRoundProgram
+import com.sandbagstrong.domain.MicroRoundStatus
+import com.sandbagstrong.domain.PostSessionState
 import com.sandbagstrong.domain.Program
+import com.sandbagstrong.domain.ResistanceLevel
 import com.sandbagstrong.domain.WorkoutType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -31,6 +39,7 @@ class WorkoutRepository(
     private val sessionDao = db.sessionDao()
     private val setLogDao = db.setLogDao()
     private val targetDao = db.targetDao()
+    private val microRoundDao = db.microRoundDao()
 
     // ---- Next workout type (persist which one is scheduled) ----
     fun getNextWorkoutType(): WorkoutType {
@@ -136,6 +145,76 @@ class WorkoutRepository(
             }
             targetDao.update(updated)
         }
+    }
+
+    // ---- Micro Round sessions ----
+    fun getMicroRoundSessionsFlow(): Flow<List<MicroRoundSessionEntity>> =
+        microRoundDao.getAllSessions()
+
+    suspend fun commitMicroRound(
+        kneeStatusBefore: KneeStatusBefore,
+        nowMillis: Long = System.currentTimeMillis()
+    ): MicroRoundSessionEntity {
+        val session = MicroRoundSessionEntity(
+            committedAtMillis = nowMillis,
+            prescribedDurationSeconds = MicroRoundProgram.PRESCRIBED_DURATION_SECONDS,
+            variant = MicroRoundProgram.variantFor(kneeStatusBefore)?.name,
+            kneeStatusBefore = kneeStatusBefore.name,
+            completionStatus = MicroRoundStatus.COMMITTED_ONLY.name
+        )
+        microRoundDao.insert(session)
+        return session
+    }
+
+    suspend fun startMicroRound(
+        sessionId: String,
+        nowMillis: Long = System.currentTimeMillis()
+    ): MicroRoundSessionEntity? {
+        val session = microRoundDao.getById(sessionId) ?: return null
+        val kneeStatus = KneeStatusBefore.valueOf(session.kneeStatusBefore)
+        if (!MicroRoundProgram.canLaunchRound(kneeStatus) || session.variant == null) {
+            return session
+        }
+        val updated = session.copy(
+            startedAtMillis = nowMillis,
+            completionStatus = MicroRoundStatus.STARTED.name
+        )
+        microRoundDao.update(updated)
+        return updated
+    }
+
+    suspend fun finishMicroRound(
+        sessionId: String,
+        nowMillis: Long = System.currentTimeMillis(),
+        completedDurationSeconds: Int,
+        stoppedEarly: Boolean,
+        resistanceLevel: ResistanceLevel,
+        kneeStatusAfter: KneeStatusAfter,
+        intentResult: IntentResult,
+        postSessionState: PostSessionState,
+        note: String?
+    ): MicroRoundSessionEntity? {
+        val session = microRoundDao.getById(sessionId) ?: return null
+        val status = if (stoppedEarly) {
+            MicroRoundStatus.STOPPED_EARLY
+        } else {
+            MicroRoundStatus.COMPLETED
+        }
+        val updated = session.copy(
+            finishedAtMillis = nowMillis,
+            completedDurationSeconds = completedDurationSeconds.coerceIn(
+                0,
+                session.prescribedDurationSeconds
+            ),
+            resistanceLevel = resistanceLevel.name,
+            kneeStatusAfter = kneeStatusAfter.name,
+            intentResult = intentResult.name,
+            postSessionState = postSessionState.name,
+            note = MicroRoundProgram.cleanNote(note.orEmpty()),
+            completionStatus = status.name
+        )
+        microRoundDao.update(updated)
+        return updated
     }
 
     // For history detail if wanted

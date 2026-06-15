@@ -33,3 +33,21 @@ data class ExerciseTargetEntity(
     val currentReps: Int,     // numeric target per set. For display we still use definition for text like "each side"
     val currentRestSeconds: Int
 )
+
+@Entity(tableName = "micro_round_sessions")
+data class MicroRoundSessionEntity(
+    @PrimaryKey val id: String = UUID.randomUUID().toString(),
+    val committedAtMillis: Long,
+    val startedAtMillis: Long? = null,
+    val finishedAtMillis: Long? = null,
+    val prescribedDurationSeconds: Int,
+    val completedDurationSeconds: Int = 0,
+    val variant: String? = null,
+    val kneeStatusBefore: String,
+    val resistanceLevel: String? = null,
+    val kneeStatusAfter: String? = null,
+    val intentResult: String? = null,
+    val postSessionState: String? = null,
+    val note: String? = null,
+    val completionStatus: String
+)

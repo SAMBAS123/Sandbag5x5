@@ -15,9 +15,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.sandbagstrong.ui.MicroRoundViewModel
 import com.sandbagstrong.ui.WorkoutViewModel
 import com.sandbagstrong.ui.screens.HistoryScreen
 import com.sandbagstrong.ui.screens.HomeScreen
+import com.sandbagstrong.ui.screens.MicroRoundScreen
 import com.sandbagstrong.ui.screens.WorkoutScreen
 import com.sandbagstrong.ui.theme.SandbagTheme
 
@@ -35,6 +37,15 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private val microRoundViewModel: MicroRoundViewModel by viewModels {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return MicroRoundViewModel(app.repository) as T
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -43,7 +54,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SandbagNavHost(viewModel = workoutViewModel)
+                    SandbagNavHost(viewModel = workoutViewModel, microRoundViewModel = microRoundViewModel)
                 }
             }
         }
@@ -53,6 +64,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SandbagNavHost(
     viewModel: WorkoutViewModel,
+    microRoundViewModel: MicroRoundViewModel,
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(
@@ -63,7 +75,9 @@ fun SandbagNavHost(
             HomeScreen(
                 viewModel = viewModel,
                 onStartWorkout = { navController.navigate("workout") },
-                onOpenHistory = { navController.navigate("history") }
+                onOpenHistory = { navController.navigate("history") },
+                onStartMicroRound = { navController.navigate("micro_round") },
+                onNeedCorner = { navController.navigate("micro_round") }
             )
         }
         composable("workout") {
@@ -72,6 +86,21 @@ fun SandbagNavHost(
                 onBack = {
                     // If user backs out mid-workout we just pop; state stays in vm until finish
                     navController.popBackStack()
+                }
+            )
+        }
+        composable("micro_round") {
+            MicroRoundScreen(
+                viewModel = microRoundViewModel,
+                onBack = {
+                    microRoundViewModel.resetLocalState()
+                    navController.popBackStack()
+                },
+                onFinished = {
+                    viewModel.refreshWorkout()
+                    navController.navigate("history") {
+                        popUpTo("home")
+                    }
                 }
             )
         }

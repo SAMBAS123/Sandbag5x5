@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.sandbagstrong.domain.Program
 import com.sandbagstrong.domain.WorkoutType
@@ -15,19 +16,46 @@ import kotlinx.coroutines.launch
     entities = [
         WorkoutSessionEntity::class,
         SetLogEntity::class,
-        ExerciseTargetEntity::class
+        ExerciseTargetEntity::class,
+        MicroRoundSessionEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun sessionDao(): SessionDao
     abstract fun setLogDao(): SetLogDao
     abstract fun targetDao(): TargetDao
+    abstract fun microRoundDao(): MicroRoundDao
 
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
+
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS micro_round_sessions (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        committedAtMillis INTEGER NOT NULL,
+                        startedAtMillis INTEGER,
+                        finishedAtMillis INTEGER,
+                        prescribedDurationSeconds INTEGER NOT NULL,
+                        completedDurationSeconds INTEGER NOT NULL,
+                        variant TEXT,
+                        kneeStatusBefore TEXT NOT NULL,
+                        resistanceLevel TEXT,
+                        kneeStatusAfter TEXT,
+                        intentResult TEXT,
+                        postSessionState TEXT,
+                        note TEXT,
+                        completionStatus TEXT NOT NULL
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
 
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -36,6 +64,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "sandbag5x5.db"
                 )
+                    .addMigrations(MIGRATION_1_2)
                     .addCallback(SeedCallback())
                     .build()
                 INSTANCE = instance

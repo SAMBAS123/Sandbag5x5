@@ -48,3 +48,18 @@ interface TargetDao {
     @Query("SELECT * FROM exercise_targets")
     fun getAllTargetsFlow(): Flow<List<ExerciseTargetEntity>>
 }
+
+@Dao
+interface MicroRoundDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(session: MicroRoundSessionEntity)
+
+    @Update
+    suspend fun update(session: MicroRoundSessionEntity)
+
+    @Query("SELECT * FROM micro_round_sessions ORDER BY committedAtMillis DESC")
+    fun getAllSessions(): Flow<List<MicroRoundSessionEntity>>
+
+    @Query("SELECT * FROM micro_round_sessions WHERE id = :id")
+    suspend fun getById(id: String): MicroRoundSessionEntity?
+}

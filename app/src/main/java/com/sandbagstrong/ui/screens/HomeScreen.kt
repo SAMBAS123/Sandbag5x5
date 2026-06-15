@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -39,7 +41,9 @@ import java.util.Locale
 fun HomeScreen(
     viewModel: WorkoutViewModel,
     onStartWorkout: () -> Unit,
-    onOpenHistory: () -> Unit
+    onOpenHistory: () -> Unit,
+    onStartMicroRound: () -> Unit,
+    onNeedCorner: () -> Unit
 ) {
     val nextType = viewModel.currentWorkoutType
     val history by viewModel.historyFlow.collectAsState()
@@ -109,6 +113,13 @@ fun HomeScreen(
             onClick = onStartWorkout
         )
 
+        Spacer(Modifier.height(18.dp))
+
+        MicroRoundHomeCard(
+            onStart = onStartMicroRound,
+            onNeedCorner = onNeedCorner
+        )
+
         Spacer(Modifier.height(32.dp))
 
         // Recent history (minimal)
@@ -161,6 +172,52 @@ fun HomeScreen(
             color = AppColors.muted.copy(alpha = 0.6f),
             fontSize = 12.sp
         )
+    }
+}
+
+@Composable
+private fun MicroRoundHomeCard(
+    onStart: () -> Unit,
+    onNeedCorner: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(AppColors.surface)
+            .padding(18.dp)
+    ) {
+        Text(
+            text = "MICRO ROUND",
+            color = AppColors.accent,
+            fontSize = 13.sp,
+            letterSpacing = 2.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "3 minutes · movement",
+            color = Color.White,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(Modifier.height(14.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Button(
+                onClick = onStart,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("START")
+            }
+            OutlinedButton(
+                onClick = onNeedCorner,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("I NEED THE CORNER")
+            }
+        }
     }
 }
 

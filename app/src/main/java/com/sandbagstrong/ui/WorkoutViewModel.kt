@@ -52,6 +52,10 @@ class WorkoutViewModel(
         repository.getAllSessionsFlow()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val microRoundHistoryFlow: StateFlow<List<com.sandbagstrong.data.db.MicroRoundSessionEntity>> =
+        repository.getMicroRoundSessionsFlow()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
         refreshWorkout()
     }
