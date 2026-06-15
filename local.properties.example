@@ -1,0 +1,19 @@
+## Example local.properties (do NOT commit a real one containing your machine-specific path)
+#
+# Android Studio usually creates this file automatically when you open the project.
+#
+# Linux example (most common after installing Android Studio):
+# sdk.dir=/home/doogie/Android/Sdk
+#
+# Other common locations:
+# sdk.dir=/home/doogie/Android/Sdk
+# sdk.dir=/opt/android-sdk
+# sdk.dir=/usr/lib/android-sdk
+#
+# You can also set the environment variable instead:
+#   export ANDROID_HOME=/home/doogie/Android/Sdk
+#   export PATH=$PATH:$ANDROID_HOME/platform-tools
+#
+# Then from the project root:
+#   ./gradlew assembleDebug
+

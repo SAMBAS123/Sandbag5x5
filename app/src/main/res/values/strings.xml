@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sandbag 5x5</string>
+    <string name="today_s_workout">Today\'s Workout</string>
+    <string name="start_workout">START WORKOUT</string>
+    <string name="complete_set">COMPLETE SET</string>
+    <string name="finish_workout">FINISH WORKOUT</string>
+    <string name="how_did_it_feel">How did that feel?</string>
+    <string name="easy">Easy</string>
+    <string name="solid">Solid</string>
+    <string name="brutal">Brutal</string>
+    <string name="failed">Failed</string>
+    <string name="rest">REST</string>
+    <string name="skip_rest">SKIP REST</string>
+    <string name="history">History</string>
+    <string name="no_history_yet">No workouts logged yet.\nGet after it.</string>
+    <string name="next_up">Next up</string>
+    <string name="sets_completed">sets completed</string>
+</resources>

@@ -1,0 +1,32 @@
+# Gradle
+.gradle/
+build/
+local.properties
+
+# IDE
+.idea/
+*.iml
+*.log
+
+# Android
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Misc
+.DS_Store
+*.apk
+*.aab
+*.ap_
+*.class
+bin/
+gen/
+out/
+*.dex
+*.so
+*.dylib
+*.so
+*.so.*
+*.so
+*.so
+*.so
